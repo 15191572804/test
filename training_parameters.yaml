@@ -1,0 +1,10 @@
+ACTOR_LR : 0.00001                 # actor网络学习率
+CRITIC_LR : 0.00001                # critic网络学习率
+GAMMA : 0.99                       # 奖励衰退比例
+TAU : 0.01                         # 软更新参数
+MEMORY_SIZE : 1000000              # 记忆池大小
+MEMORY_WARMUP_SIZE : 100000        # 记忆池唤醒大小
+BATCH_SIZE : 256                   # 批大小
+TRAIN_TOTAL_STEPS : 10000000        # 总训练步数
+TEST_EVERY_STEPS : 10000           # 测试间隔
+EPSILON : 0.5                      # 探索概率
