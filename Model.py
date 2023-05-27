@@ -115,6 +115,84 @@ from paddle.nn import functional as F
 
 
 
+# import paddle
+# import parl
+# from paddle import nn
+# from paddle.nn import functional as F
+
+# # actor
+# class Actor(parl.Model):
+#     def __init__(self, obs_dim, act_dim):
+#         super(Actor, self).__init__()
+#         # --------------------------------------------
+#         # for baseline
+#         # self.fc1 = layers.fc(size=512, act="relu")
+#         # self.fc2 = layers.fc(size=512, act="relu")
+#         # self.fc3 = layers.fc(size=512, act="relu")
+#         # self.fc4 = layers.fc(size=act_dim, act="tanh") 
+#         # --------------------------------------------
+        
+#         # --------------------------------------------
+#         # our method
+#         self.fc1 = nn.Linear(in_features=obs_dim, out_features=512)
+#         self.fc2 = nn.Linear(in_features=512, out_features=256)
+#         self.fc3 = nn.Linear(in_features=256, out_features=act_dim)
+#         self.bn = nn.BatchNorm(act_dim)
+#         # --------------------------------------------
+
+
+
+#     def policy(self, obs):
+#         out = F.relu(self.fc1(obs))
+#         out = F.relu(self.fc2(out))
+#         out = self.fc3(out)
+#         out = self.bn(out)
+#         return paddle.tanh(out)
+# # critic
+# class Critic(parl.Model):
+#     def __init__(self, obs_dim, act_dim):
+#         super(Critic, self).__init__()
+#         # --------------------------------------------
+#         # baseline
+#         # self.fc1 = layers.fc(size=512, act="relu")
+#         # self.fc2 = layers.fc(size=512, act="relu")
+#         # self.fc3 = layers.fc(size=512, act="relu")
+#         # self.fc4 = layers.fc(size=512, act="relu")
+#         # self.fc5 = layers.fc(size=1, act=None)
+#         # --------------------------------------------
+#         self.fc1 = nn.Linear(in_features=obs_dim, out_features=512)
+#         self.fc2 = nn.Linear(in_features=512 + act_dim, out_features=256)
+#         self.fc3 = nn.Linear(in_features=256, out_features=1)
+        
+#     def value(self, obs, act):
+#         out = F.relu(self.fc1(obs))
+#         out = paddle.concat([out, act], axis=1)
+#         out = F.relu(self.fc2(out))
+#         out = self.fc3(out)
+#         return out
+
+# # integate actor net and critic net together
+# class Model(parl.Model):
+#     def __init__(self, obs_dim, act_dim):
+#         super(Model, self).__init__()
+#         self.actor_model = Actor(obs_dim, act_dim)
+#         self.critic_model = Critic(obs_dim, act_dim)
+
+#     def policy(self, obs):
+#         return self.actor_model.policy(obs)
+
+#     def value(self, obs, act):
+#         return self.critic_model.value(obs, act)
+
+#     # get actor's parameter
+#     def get_actor_params(self):
+#         return self.actor_model.parameters()
+    
+#     # get actor's parameter
+#     def get_critic_params(self):
+#         return self.critic_model.parameters()
+
+
 import paddle
 import parl
 from paddle import nn
@@ -124,54 +202,54 @@ from paddle.nn import functional as F
 class Actor(parl.Model):
     def __init__(self, obs_dim, act_dim):
         super(Actor, self).__init__()
-        # --------------------------------------------
-        # for baseline
-        # self.fc1 = layers.fc(size=512, act="relu")
-        # self.fc2 = layers.fc(size=512, act="relu")
-        # self.fc3 = layers.fc(size=512, act="relu")
-        # self.fc4 = layers.fc(size=act_dim, act="tanh") 
-        # --------------------------------------------
-        
-        # --------------------------------------------
-        # our method
-        self.fc1 = nn.Linear(in_features=obs_dim, out_features=512)
+        self.conv1 = nn.Conv1D(in_channels=obs_dim, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm1D(32)
+        self.conv2 = nn.Conv1D(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm1D(64)
+        self.fc1 = nn.Linear(in_features=64, out_features=512)
+        self.bn3 = nn.BatchNorm1D(512)
         self.fc2 = nn.Linear(in_features=512, out_features=256)
+        self.bn4 = nn.BatchNorm1D(256)
         self.fc3 = nn.Linear(in_features=256, out_features=act_dim)
-        self.bn = nn.BatchNorm(act_dim)
-        # --------------------------------------------
-
-
+        self.bn5 = nn.BatchNorm1D(act_dim)
 
     def policy(self, obs):
-        out = F.relu(self.fc1(obs))
-        out = F.relu(self.fc2(out))
-        out = self.fc3(out)
-        out = self.bn(out)
-        return paddle.tanh(out)
+        obs = paddle.unsqueeze(obs, axis=-1)
+        
+        out = F.relu(self.bn1(self.conv1(obs)))
+        out = F.relu(self.bn2(self.conv2(out)))
+        out = paddle.squeeze(out, axis=2)
+        out = F.relu(self.bn3(self.fc1(out)))
+        out = F.relu(self.bn4(self.fc2(out)))
+        out = paddle.tanh(self.bn5(self.fc3(out)))
+        return out
+
 # critic
 class Critic(parl.Model):
     def __init__(self, obs_dim, act_dim):
         super(Critic, self).__init__()
-        # --------------------------------------------
-        # baseline
-        # self.fc1 = layers.fc(size=512, act="relu")
-        # self.fc2 = layers.fc(size=512, act="relu")
-        # self.fc3 = layers.fc(size=512, act="relu")
-        # self.fc4 = layers.fc(size=512, act="relu")
-        # self.fc5 = layers.fc(size=1, act=None)
-        # --------------------------------------------
-        self.fc1 = nn.Linear(in_features=obs_dim, out_features=512)
-        self.fc2 = nn.Linear(in_features=512 + act_dim, out_features=256)
-        self.fc3 = nn.Linear(in_features=256, out_features=512)
-        
+        self.conv1 = nn.Conv1D(in_channels=obs_dim, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm1D(32)
+        self.conv2 = nn.Conv1D(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm1D(64)
+        self.fc1 = nn.Linear(in_features=64 + act_dim, out_features=512)
+        self.bn3 = nn.BatchNorm1D(512)
+        self.fc2 = nn.Linear(in_features=512, out_features=256)
+        self.bn4 = nn.BatchNorm1D(256)
+        self.fc3 = nn.Linear(in_features=256, out_features=1)
+
     def value(self, obs, act):
-        out = F.relu(self.fc1(obs))
+        obs = paddle.unsqueeze(obs, axis=-1)
+        out = F.relu(self.bn1(self.conv1(obs)))
+        out = F.relu(self.bn2(self.conv2(out)))
+        out = paddle.squeeze(out, axis=2)
         out = paddle.concat([out, act], axis=1)
-        out = F.relu(self.fc2(out))
-        out = self.fc3(out)
+        out = F.relu(self.bn3(self.fc1(out)))
+        out = F.relu(self.bn4(self.fc2(out)))
+        out = F.relu(self.fc3(out))
         return out
 
-# integate actor net and critic net together
+# integrate actor net and critic net together
 class Model(parl.Model):
     def __init__(self, obs_dim, act_dim):
         super(Model, self).__init__()
@@ -187,11 +265,10 @@ class Model(parl.Model):
     # get actor's parameter
     def get_actor_params(self):
         return self.actor_model.parameters()
-    
-    # get actor's parameter
+
+    # get critic's parameter
     def get_critic_params(self):
         return self.critic_model.parameters()
-
 
 #------------------------------------------------------ TD3 ------------------------------------------------------
 # import parl

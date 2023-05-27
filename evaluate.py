@@ -50,7 +50,7 @@ agent = Agent(
 # ./model/2021.2.26/s_759057_r_700960
 # ./model/2021.2.26/s_778768_r_881551s
 
-agent.restore("./machineLearning/ReinforcementLearning/RobotObstacleAvoidance/MaplessNavigation-main/MaplessNavigation-main/model/DDPG/s_409048_r_1001550")
+agent.restore(r"D:\code\pythonCode\pythonCode\machineLearning\ReinforcementLearning\RobotObstacleAvoidance\MaplessNavigation-main\MaplessNavigation-main\model\2023.5.27(plane_static_obstacle-A)\s_4642672_r_2969.ckpt")
 # tm.sleep(10)
 reward, info = evaluate(env, agent)
 print(reward)

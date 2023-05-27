@@ -70,9 +70,9 @@ class Agent(parl.Agent):
         # critic_loss = self.alg.learn(obs, action, reward, next_obs,
         #                                          terminal)
         # return critic_loss
-        critic_loss, actor_loss = self.alg.learn(obs, action, reward, next_obs,
+        critic_loss, actor_loss, Q_value = self.alg.learn(obs, action, reward, next_obs,
                                                  terminal)
-        return critic_loss, actor_loss
+        return critic_loss, actor_loss, Q_value
     
     def sample(self, obs):
         """ 根据观测值 obs 采样（带探索）一个动作

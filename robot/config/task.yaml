@@ -10,11 +10,11 @@ TARGET_POS : [0., 9., 0.2]           # 终点的坐标
 # DISTANCE_CHANGE_REWARD_COE : 100    # 每次离终点距离和上一次比较的差值的奖励系数
 
 # 原文指标
-COLLISION_REWARD : -100              # 碰撞一次的奖励值（负数代表惩罚）
-REACH_TARGET_REWARD : 120       # 到达终点的奖励
+COLLISION_REWARD : -1000              # 碰撞一次的奖励值（负数代表惩罚）
+REACH_TARGET_REWARD : 10000       # 到达终点的奖励
 TARGET_RADIUS : 2.5                 # 终点的领域半径
-DISTANCE_CHANGE_REWARD_COE : 500    # 每次离终点距离和上一次比较的差值的奖励系数
-ANGLE_REWARD: -0.1
+DISTANCE_CHANGE_REWARD_COE : 5000    # 每次离终点距离和上一次比较的差值的奖励系数
+ANGLE_REWARD: -1
 # CHATGPT
 # laser_distance: 1.0
 # target_distance: 1.0

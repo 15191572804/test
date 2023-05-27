@@ -18,7 +18,7 @@ param_dict = load(open(param_path, "r", encoding="utf-8"), Loader=Loader)
 print(param_dict)
 
 def run_episode(env : Env, agent : parl.Agent, rpm : ReplayMemory, return_time : bool = False):
-
+    actor_loss, critic_loss, Q_value = 0., 0., 0.
     total_reward, steps = 0., 0
     obs = env.reset()
 
@@ -42,17 +42,17 @@ def run_episode(env : Env, agent : parl.Agent, rpm : ReplayMemory, return_time :
         next_obs[-2] = next_obs[-2] / (20 * sqrt(2))
         
         rpm.append(obs, action, reward, next_obs, done)
-        
+        obs = next_obs
+        total_reward += reward
         # do warm up until rpm size reach MEMORY_WARMUP_SIZE
         if rpm.size() > param_dict["MEMORY_WARMUP_SIZE"]:
             batch_obs, batch_action, batch_reward, batch_next_obs, \
                 batch_terminal = rpm.sample_batch(param_dict["BATCH_SIZE"])
 
-            agent.learn(batch_obs, batch_action, batch_reward,
+            actor_loss, critic_loss, Q_value = agent.learn(batch_obs, batch_action, batch_reward,
                                       batch_next_obs, batch_terminal)
-            obs = next_obs
-            total_reward += reward
-
+            
+            
         
         if done:
             break
@@ -61,7 +61,7 @@ def run_episode(env : Env, agent : parl.Agent, rpm : ReplayMemory, return_time :
 
     
     
-    return total_reward, steps
+    return total_reward, steps, actor_loss, critic_loss, Q_value
 
 def evaluate(env : Env, agent : parl.Agent):       
     obs = env.reset()
